@@ -7,8 +7,9 @@
 //
 
 #import "UIForLumberjack.h"
+#import "MFMessageComposeViewController+BlocksKit.h"
 
-@interface UIForLumberjack ()
+@interface UIForLumberjack ()<UIActionSheetDelegate, MFMailComposeViewControllerDelegate>
 
 @property (nonatomic, strong) id<DDLogFormatter> logFormatter;
 @property (nonatomic, strong) NSMutableArray *messages;
@@ -141,12 +142,22 @@
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
+    UITableViewHeaderFooterView *header = [[UITableViewHeaderFooterView alloc] init];
+    header.backgroundColor = [UIColor colorWithRed:59/255.0 green:209/255.0 blue:65/255.0 alpha:1];
+    
     UIButton *closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    closeButton.frame = CGRectMake(0, 0, 100, 44);
     [closeButton setTitle:@"Close" forState:UIControlStateNormal];
-    closeButton.backgroundColor = [UIColor colorWithRed:59/255.0 green:209/255.0 blue:65/255.0 alpha:1];
-    [closeButton setContentHorizontalAlignment:UIControlContentHorizontalAlignmentLeft];
     [closeButton addTarget:self action:@selector(hideLog) forControlEvents:UIControlEventTouchUpInside];
-    return closeButton;
+    [header addSubview:closeButton];
+    
+    UIButton *action = [UIButton buttonWithType:UIButtonTypeCustom];
+    [action setTitle:@"More" forState:UIControlStateNormal];
+    action.frame = CGRectMake(tableView.frame.size.width - 100, 0, 100 , 44);
+    //    action.backgroundColor = [UIColor colorWithRed:59/255.0 green:209/255.0 blue:65/255.0 alpha:1];
+    [action addTarget:self action:@selector(showActionSheet) forControlEvents:UIControlEventTouchUpInside];
+    [header addSubview:action];
+    return header;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -176,4 +187,51 @@
     [self.tableView removeFromSuperview];
 }
 
+- (void)showActionSheet {
+    UIActionSheet *sheet = [[UIActionSheet alloc] initWithTitle:@"" delegate:self
+                                              cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Clear" otherButtonTitles:@"Email", nil];
+    [sheet showInView:self.tableView];
+}
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+    switch (buttonIndex) {
+        case 1:
+        {
+            MFMailComposeViewController* controller = [[MFMailComposeViewController alloc] init];
+            controller.mailComposeDelegate = self;
+            [controller setSubject:@"Debug Log"];
+            NSMutableArray *messages = [NSMutableArray array];
+            
+            [_messages enumerateObjectsUsingBlock:^(DDLogMessage *message, NSUInteger idx, BOOL *stop) {
+                NSString *string =  [NSString stringWithFormat:@"[%@] %@", [_dateFormatter stringFromDate:message->timestamp], message->logMsg];
+                [messages addObject:string];
+            }];
+            
+            NSString *body = [messages componentsJoinedByString:@"\n"];
+            [controller setMessageBody:body isHTML:NO];
+            if (controller) {
+                UIViewController *rootViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
+                if (rootViewController) {
+                    [rootViewController presentViewController:controller animated:YES completion:nil];
+                }
+            }
+        }
+            break;
+        case 0: {
+            [_messages removeAllObjects];
+            [self.tableView reloadData];
+        }
+            
+            break;
+            
+        default:
+            break;
+    }
+}
+
+
+- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error {
+    UIViewController *rootViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
+    [rootViewController dismissViewControllerAnimated:YES completion:nil];
+}
 @end
