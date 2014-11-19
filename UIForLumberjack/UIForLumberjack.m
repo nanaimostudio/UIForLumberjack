@@ -143,7 +143,7 @@
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
     UITableViewHeaderFooterView *header = [[UITableViewHeaderFooterView alloc] init];
-    header.backgroundColor = [UIColor colorWithRed:59/255.0 green:209/255.0 blue:65/255.0 alpha:1];
+    header.contentView.backgroundColor = [UIColor colorWithRed:59/255.0 green:209/255.0 blue:65/255.0 alpha:1];
     
     UIButton *closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
     closeButton.frame = CGRectMake(0, 0, 100, 44);
@@ -197,9 +197,7 @@
     switch (buttonIndex) {
         case 1:
         {
-            MFMailComposeViewController* controller = [[MFMailComposeViewController alloc] init];
-            controller.mailComposeDelegate = self;
-            [controller setSubject:@"Debug Log"];
+            [self hideLog];
             NSMutableArray *messages = [NSMutableArray array];
             
             [_messages enumerateObjectsUsingBlock:^(DDLogMessage *message, NSUInteger idx, BOOL *stop) {
@@ -207,14 +205,26 @@
                 [messages addObject:string];
             }];
             
-            NSString *body = [messages componentsJoinedByString:@"\n"];
-            [controller setMessageBody:body isHTML:NO];
-            if (controller) {
-                UIViewController *rootViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
-                if (rootViewController) {
-                    [rootViewController presentViewController:controller animated:YES completion:nil];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                if ([MFMailComposeViewController canSendMail]) {
+                    MFMailComposeViewController* controller = [[MFMailComposeViewController alloc] init];
+                    controller.mailComposeDelegate = self;
+                    [controller setSubject:@"Debug Log"];
+                    
+                    NSString *body = [messages componentsJoinedByString:@"\n"];
+                    [controller setMessageBody:body isHTML:NO];
+                    if (controller) {
+                        UIViewController *rootViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
+                        if (rootViewController) {
+                            [rootViewController presentViewController:controller animated:YES completion:nil];
+                        }
+                    }
                 }
-            }
+                else {
+                    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Can't send mail" message:@"Mail is not available" delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+                    [alert show];
+                }
+            });
         }
             break;
         case 0: {
@@ -231,7 +241,6 @@
 
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error {
-    UIViewController *rootViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
-    [rootViewController dismissViewControllerAnimated:YES completion:nil];
+    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 @end
