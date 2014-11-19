@@ -32,7 +32,7 @@
         sharedInstance.tableView.dataSource = sharedInstance;
         [sharedInstance.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"LogCell"];
         sharedInstance.tableView.backgroundColor = [UIColor blackColor];
-        sharedInstance.tableView.alpha = 0.8f;
+        sharedInstance.tableView.alpha = 0.9f;
         sharedInstance.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         
         sharedInstance.dateFormatter = [[NSDateFormatter alloc] init];
@@ -144,6 +144,7 @@
     UIButton *closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [closeButton setTitle:@"Close" forState:UIControlStateNormal];
     closeButton.backgroundColor = [UIColor colorWithRed:59/255.0 green:209/255.0 blue:65/255.0 alpha:1];
+    [closeButton setContentHorizontalAlignment:UIControlContentHorizontalAlignmentLeft];
     [closeButton addTarget:self action:@selector(hideLog) forControlEvents:UIControlEventTouchUpInside];
     return closeButton;
 }
