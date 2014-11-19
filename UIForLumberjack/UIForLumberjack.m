@@ -93,7 +93,7 @@
             break;
             
         case LOG_FLAG_VERBOSE:
-            cell.textLabel.textColor = [UIColor lightTextColor];
+            cell.textLabel.textColor = [UIColor whiteColor];
             break;
             
         default:
