@@ -144,16 +144,17 @@
 {
     UITableViewHeaderFooterView *header = [[UITableViewHeaderFooterView alloc] init];
     header.contentView.backgroundColor = [UIColor colorWithRed:59/255.0 green:209/255.0 blue:65/255.0 alpha:1];
+    header.alpha = 1.0;
     
     UIButton *closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    closeButton.frame = CGRectMake(0, 0, 100, 44);
+    closeButton.frame = CGRectMake(0, 0, 100, 60);
     [closeButton setTitle:@"Close" forState:UIControlStateNormal];
     [closeButton addTarget:self action:@selector(hideLog) forControlEvents:UIControlEventTouchUpInside];
     [header addSubview:closeButton];
     
     UIButton *action = [UIButton buttonWithType:UIButtonTypeCustom];
     [action setTitle:@"More" forState:UIControlStateNormal];
-    action.frame = CGRectMake(tableView.frame.size.width - 100, 0, 100 , 44);
+    action.frame = CGRectMake(tableView.frame.size.width - 100, 0, 100 , 60);
     //    action.backgroundColor = [UIColor colorWithRed:59/255.0 green:209/255.0 blue:65/255.0 alpha:1];
     [action addTarget:self action:@selector(showActionSheet) forControlEvents:UIControlEventTouchUpInside];
     [header addSubview:action];
@@ -188,7 +189,7 @@
 }
 
 - (void)showActionSheet {
-    UIActionSheet *sheet = [[UIActionSheet alloc] initWithTitle:@"" delegate:self
+    UIActionSheet *sheet = [[UIActionSheet alloc] initWithTitle:@"Log Options" delegate:self
                                               cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Clear" otherButtonTitles:@"Email", nil];
     [sheet showInView:self.tableView];
 }
